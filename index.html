@@ -30,6 +30,7 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
             transition: transform 0.2s ease-out;
             line-height: 1.4;
+            position: relative;
         }
         
         .msg-out {
@@ -72,14 +73,49 @@
         .code-textarea:focus {
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.02), 0 0 0 3px rgba(16, 185, 129, 0.2);
         }
+
+        /* Фоны чата */
+        .bg-pattern-dots { background-image: radial-gradient(#e2e8f0 1px, transparent 1px); background-size: 16px 16px; }
+        .dark .bg-pattern-dots { background-image: radial-gradient(#2d2d30 1px, transparent 1px); }
+        .bg-pattern-grid { background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 20px 20px; }
+        .dark .bg-pattern-grid { background-image: linear-gradient(#2d2d30 1px, transparent 1px), linear-gradient(90deg, #2d2d30 1px, transparent 1px); }
+        .bg-pattern-none { background-image: none; }
     </style>
 </head>
-<body class="flex flex-col h-[100dvh] w-full text-gray-900 bg-[#f4f7f5] dark:bg-[#111111] dark:text-gray-100 transition-colors duration-200">
+<body class="flex flex-col h-[100dvh] w-full text-gray-900 bg-[#f4f7f5] dark:bg-[#111111] dark:text-gray-100 transition-colors duration-200 themes-target-accent">
 
-    <header class="bg-gradient-to-r from-[#10B981] to-[#059669] text-white p-3 flex items-center justify-between shrink-0 shadow-lg z-10 w-full pt-[max(0.75rem, env(safe-area-inset-top))]">
+    <!-- ПАНЕЛЬ ЗАЩИТЫ ПИН-КОДОМ -->
+    <div id="pin-lock-screen" class="fixed inset-0 bg-emerald-600 dark:bg-zinc-900 z-[100] flex flex-col items-center justify-center p-6 hidden">
+        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h2 class="text-xl font-bold text-white mb-2">FoljGram Заблокирован</h2>
+        <p class="text-sm text-emerald-100 dark:text-gray-400 mb-6">Введите PIN-код для доступа к чату</p>
+        <input type="password" id="pin-input" maxlength="4" class="w-40 h-14 bg-white/20 border-2 border-white/40 text-white rounded-2xl text-center text-3xl tracking-widest outline-none focus:border-white transition-all font-mono" placeholder="••••">
+        <button id="pin-unlock-btn" class="mt-4 px-6 py-2.5 bg-white text-emerald-700 font-bold rounded-xl active:scale-95 transition text-sm shadow-md">Разблокировать</button>
+    </div>
+
+    <!-- КОНТЕЙНЕР РЕАКЦИЙ И МЕНЮ НАД СООБЩЕНИЕМ -->
+    <div id="context-menu-popup" class="fixed z-50 bg-white dark:bg-zinc-800 shadow-xl rounded-2xl p-2 hidden border border-gray-100 dark:border-zinc-700 max-w-[280px]">
+        <div class="flex gap-2 pb-2 mb-2 border-b border-gray-100 dark:border-zinc-700 justify-around text-xl">
+            <button class="reaction-btn active:scale-125 transition">👍</button>
+            <button class="reaction-btn active:scale-125 transition">❤️</button>
+            <button class="reaction-btn active:scale-125 transition">😂</button>
+            <button class="reaction-btn active:scale-125 transition">😮</button>
+            <button class="reaction-btn active:scale-125 transition">😢</button>
+        </div>
+        <div class="flex flex-col gap-1 text-xs font-semibold">
+            <button id="ctx-reply-btn" class="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg text-left text-gray-700 dark:text-gray-200">✨ Ответить</button>
+            <button id="ctx-edit-btn" class="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg text-left text-gray-700 dark:text-gray-200">✏️ Редактировать</button>
+            <button id="ctx-star-btn" class="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-lg text-left text-gray-700 dark:text-gray-200">⭐ В избранное</button>
+            <button id="ctx-delete-btn" class="flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg text-left text-red-500">🗑️ Удалить у всех</button>
+        </div>
+    </div>
+
+    <header class="bg-gradient-to-r from-[#10B981] to-[#059669] text-white p-3 flex items-center justify-between shrink-0 shadow-lg z-10 w-full pt-[max(0.75rem, env(safe-area-inset-top))] header-gradient-target">
         <div class="flex items-center gap-3 overflow-hidden">
             <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-md border-2 border-white/40">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="stroke-accent-target">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
             </div>
@@ -87,12 +123,20 @@
                 <h1 id="chat-title" class="text-xl font-extrabold leading-tight tracking-tight truncate drop-shadow-sm">FoljGram</h1>
                 <div class="flex items-center gap-1.5 truncate">
                     <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-400 border border-white/50 shadow-sm transition-colors"></div>
-                    <p id="status-text" class="text-xs text-green-50 truncate font-medium">Отключен</p>
+                    <p id="status-text" class="text-xs text-green-50 truncate font-medium flex items-center gap-1">Отключен <span id="header-extra-info" class="opacity-75"></span></p>
                 </div>
             </div>
         </div>
         
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Поиск по сообщениям (Новое) -->
+            <button id="btn-toggle-search" class="p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition active:scale-90 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            <!-- Игры P2P (Новое) -->
+            <button id="btn-show-games" class="p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition active:scale-90 shadow-sm relative group">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
+            </button>
             <!-- Кнопка Настроек (Шестерёнка) -->
             <button id="btn-show-settings" class="p-2.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition active:scale-90 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -110,7 +154,13 @@
         </div>
     </header>
 
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 w-full">
+    <!-- ВСПЛЫВАЮЩАЯ ПАНЕЛЬ ПОИСКА -->
+    <div id="search-bar-container" class="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 p-2 hidden flex items-center gap-2">
+        <input type="text" id="search-messages-input" class="flex-1 bg-gray-100 dark:bg-zinc-800 rounded-xl h-9 px-3 text-xs outline-none text-gray-900 dark:text-gray-100" placeholder="Поиск по истории сообщений...">
+        <button id="btn-clear-search" class="text-xs font-bold text-gray-400 hover:text-gray-600 px-1">Сброс</button>
+    </div>
+
+    <main id="chat-container" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 w-full bg-pattern-dots">
         <div class="msg-bubble msg-in p-4 text-[15px]">
             <p class="font-extrabold mb-1 text-lg">Привет! Добро пожаловать в FoljGram 🌿</p>
             Нажми на иконку связи в правом верхнем углу, чтобы установить P2P соединение с другом! Мы можем общаться из разных сетей Wi-Fi и отправлять файлы любого размера, голосовые и свои стикеры!
@@ -118,11 +168,42 @@
         </div>
     </main>
 
+    <!-- ПАНЕЛЬ ЦИТИРОВАНИЯ ИЛИ РЕДАКТИРОВАНИЯ ПЕРЕД ОТПРАВКОЙ -->
+    <div id="input-modifier-panel" class="hidden bg-gray-100 dark:bg-zinc-900 px-4 py-1.5 border-t border-gray-200 dark:border-zinc-800 flex justify-between items-center text-xs">
+        <div class="overflow-hidden mr-2">
+            <p id="modifier-type-label" class="font-bold text-emerald-600 dark:text-emerald-400"></p>
+            <p id="modifier-text-preview" class="truncate text-gray-500 dark:text-gray-400"></p>
+        </div>
+        <button id="btn-cancel-modifier" class="p-1 text-gray-400 hover:text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+
     <footer class="bg-white dark:bg-[#1a1a1a] px-2 py-3.5 flex flex-col gap-2 shrink-0 w-full border-t border-gray-200 dark:border-zinc-800 shadow-[0_-4px_15px_rgba(0,0,0,0.03)] transition-colors duration-200" style="padding-bottom: max(0.8rem, env(safe-area-inset-bottom));">
         <!-- Скрытые инпуты для работы с файлами и стикерами -->
         <input type="file" id="file-input" class="hidden">
         <input type="file" id="sticker-upload-input" class="hidden" accept="image/*">
         
+        <!-- Панель управления специальными опциями отправки (Секретные сообщения, Гео и т.д.) -->
+        <div class="flex items-center justify-between px-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
+            <div class="flex items-center gap-2">
+                <!-- Секретный таймер -->
+                <span class="flex items-center gap-0.5">
+                    ⏱️ Секретно: 
+                    <select id="setting-ttl" class="bg-transparent text-gray-600 dark:text-gray-300 outline-none font-bold">
+                        <option value="0" selected>Выкл</option>
+                        <option value="5">5с</option>
+                        <option value="15">15с</option>
+                        <option value="30">30с</option>
+                    </select>
+                </span>
+                <!-- Отправка Локации -->
+                <button id="btn-send-location" class="hover:text-emerald-500 flex items-center gap-0.5 transition">📍 Моя гео-метка</button>
+            </div>
+            <!-- Счетчик букв -->
+            <div id="char-counter" class="opacity-80">0/1000</div>
+        </div>
+
         <!-- Главная панель ввода -->
         <div class="flex items-center gap-1.5 w-full">
             <!-- Кнопка прикрепления файлов (Скрепка) -->
@@ -155,9 +236,9 @@
             
             <!-- Поле ввода со встроенной кнопкой отправки -->
             <div class="flex-1 relative flex items-center">
-                <input type="text" id="message-input" class="w-full bg-gray-100/80 dark:bg-zinc-800 rounded-2xl h-12 pl-4 pr-12 text-[16px] outline-none border border-transparent focus:border-emerald-300 transition-all focus:bg-white dark:focus:bg-zinc-700 text-gray-900 dark:text-gray-100 focus:shadow-sm disabled:opacity-50" placeholder="Установите связь..." disabled>
+                <input type="text" id="message-input" maxlength="1000" class="w-full bg-gray-100/80 dark:bg-zinc-800 rounded-2xl h-12 pl-4 pr-12 text-[16px] outline-none border border-transparent focus:border-emerald-300 transition-all focus:bg-white dark:focus:bg-zinc-700 text-gray-900 dark:text-gray-100 focus:shadow-sm disabled:opacity-50" placeholder="Установите связь..." disabled>
                 
-                <button id="send-btn" class="absolute right-1.5 w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center transition-all active:scale-90 disabled:opacity-40" disabled>
+                <button id="send-btn" class="absolute right-1.5 w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center transition-all active:scale-90 disabled:opacity-40 btn-gradient-target" disabled>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 1px;">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -170,7 +251,7 @@
         <div id="stickers-panel" class="hidden flex flex-col gap-2 bg-gray-50 dark:bg-zinc-900 p-3 rounded-2xl border border-gray-100 dark:border-zinc-800/60 max-h-48 overflow-y-auto">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-zinc-800 pb-1.5">
                 <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Мои Стикеры</span>
-                <button id="btn-add-sticker" class="text-xs font-bold text-emerald-500 hover:text-emerald-600 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-lg transition active:scale-95">
+                <button id="btn-add-sticker" class="text-xs font-bold text-emerald-500 hover:text-emerald-600 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-1 rounded-lg transition active:scale-95 text-accent-target">
                     + Добавить стикер
                 </button>
             </div>
@@ -179,6 +260,32 @@
             </div>
         </div>
     </footer>
+
+    <!-- МОДАЛКА ИГР (КРЕСТИКИ-НОЛИКИ P2P) -->
+    <div id="games-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-[#1a1a1a] w-full rounded-t-[32px] p-6 pb-10 shadow-2xl modal-enter transform flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-extrabold tracking-tight">P2P Игры 🎮</h2>
+                <button id="close-games-btn" class="p-2.5 text-gray-500 bg-gray-100 dark:bg-zinc-800 rounded-full">✕</button>
+            </div>
+            <p class="text-xs text-gray-500">Сыграйте в Крестики-Нолики со своим собеседником в реальном времени!</p>
+            <div class="flex justify-center gap-4 text-sm font-bold my-2">
+                <div>Вы: <span id="game-your-turn" class="text-emerald-500">Ожидание</span></div>
+                <button id="btn-game-reset" class="bg-gray-200 dark:bg-zinc-700 px-3 py-1 rounded-lg text-xs">Сбросить поле</button>
+            </div>
+            <div class="grid grid-cols-3 gap-2 max-w-[240px] mx-auto w-full aspect-square bg-gray-100 dark:bg-zinc-800 p-2 rounded-xl" id="ttt-board">
+                <button data-index="0" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="1" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="2" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="3" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="4" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="5" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="6" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="7" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+                <button data-index="8" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
+            </div>
+        </div>
+    </div>
 
     <!-- МОДАЛКА СВЯЗИ -->
     <div id="connection-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden opacity-0 transition-opacity duration-300">
@@ -202,7 +309,7 @@
             </div>
 
             <!-- БЛОК ГЕНЕРАЦИИ (OFFER / АДМИН) -->
-            <div id="block-offer" class="hidden flex flex-col gap-3 border-l-4 border-[#10B981] pl-3.5 mt-2">
+            <div id="block-offer" class="hidden flex flex-col gap-3 border-l-4 border-[#10B981] pl-3.5 mt-2 border-accent-target">
                 <p class="text-[14px] font-bold text-gray-900 dark:text-gray-100">Ваш ключ подключения:</p>
                 <button id="create-offer-btn" class="py-2.5 bg-gray-900 dark:bg-zinc-700 text-white rounded-xl font-semibold active:scale-95 transition shadow-sm text-sm">
                     Сгенерировать мой ключ
@@ -215,7 +322,7 @@
 
                 <p class="text-[14px] font-bold text-gray-900 dark:text-gray-100 mt-1">Ключ друга:</p>
                 <textarea id="friend-code-answer" rows="2" class="code-textarea w-full bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-xl p-2.5 text-[11px] font-mono break-all focus:outline-none focus:border-emerald-400 text-gray-900 dark:text-gray-100" placeholder="Вставьте сюда ответный код, полученный от друга..."></textarea>
-                <button id="connect-offer-btn" class="py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold active:scale-95 transition shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2">
+                <button id="connect-offer-btn" class="py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold active:scale-95 transition shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 bg-accent-target">
                     🚀 Подключиться
                 </button>
             </div>
@@ -239,7 +346,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА НАСТРОЕК (ИНТЕРФЕЙС И ОПТИМИЗАЦИЯ) -->
+    <!-- МОДАЛКА НАСТРОЕК (ИНТЕРФЕЙС И ОПТИМИЗАЦИЯ - ДОПОЛНЕНО) -->
     <div id="settings-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-[#1a1a1a] w-full rounded-t-[32px] p-6 pb-10 shadow-2xl modal-enter transform flex flex-col gap-5 max-h-[85vh] overflow-y-auto transition-colors duration-200" id="settings-content">
             <div class="flex justify-between items-center">
@@ -293,6 +400,128 @@
                         <input type="checkbox" id="setting-sound" class="sr-only peer" checked>
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 1] Цвет Акцента темы -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Цвет интерфейса</p>
+                        <p class="text-xs text-gray-500">Основной цвет элементов</p>
+                    </div>
+                    <select id="setting-theme-color" class="bg-white dark:bg-zinc-800 border rounded-xl p-2 text-sm text-gray-900 dark:text-gray-100">
+                        <option value="emerald" selected>Изумруд</option>
+                        <option value="indigo">Индиго</option>
+                        <option value="violet">Фиолетовый</option>
+                        <option value="amber">Янтарь</option>
+                    </select>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 2] Режим инкогнито активностей -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Абсолютный Инкогнито</p>
+                        <p class="text-xs text-gray-500">Скрыть статусы «печатает...» от друга</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-incognito" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 3] Тактильная Вибрация -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Виброотклик (Haptic)</p>
+                        <p class="text-xs text-gray-500">Легкая вибрация при кликах по UI</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-haptic" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 4] Сжатие изображений перед Base64 -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Оптимизация картинок</p>
+                        <p class="text-xs text-gray-500">Уменьшать разрешение перед передачей</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-compress-img" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 5] Фильтр эффектов голоса -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Эффект голосовых</p>
+                        <p class="text-xs text-gray-500">Изменение тона аудиозаписи</p>
+                    </div>
+                    <select id="setting-voice-fx" class="bg-white dark:bg-zinc-800 border rounded-xl p-2 text-sm text-gray-900 dark:text-gray-100">
+                        <option value="none" selected>Без эффектов</option>
+                        <option value="robot">Робот</option>
+                        <option value="chipmunk">Бурундук</option>
+                    </select>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 6] Лимит размера вложений -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Макс. размер файла</p>
+                        <p class="text-xs text-gray-500">Защита от зависаний буфера</p>
+                    </div>
+                    <select id="setting-max-size" class="bg-white dark:bg-zinc-800 border rounded-xl p-2 text-sm text-gray-900 dark:text-gray-100">
+                        <option value="10">10 MB</option>
+                        <option value="50" selected>50 MB</option>
+                        <option value="200">200 MB</option>
+                    </select>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 7] Автопрокрутка -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Автопрокрутка вниз</p>
+                        <p class="text-xs text-gray-500">Скроллить при новых сообщениях</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-autoscroll" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 8] Запоминание сессии связи -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Сохранять сессии RTC</p>
+                        <p class="text-xs text-gray-500">Кэшировать метаданные токенов</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-save-session" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 9] Защита паролем на вход -->
+                <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
+                    <div>
+                        <p class="font-bold">Защитный PIN-код</p>
+                        <p class="text-xs text-gray-500">Запрашивать 4 цифры при открытии чата</p>
+                    </div>
+                    <input type="password" id="setting-pin-code" maxlength="4" class="w-20 bg-white dark:bg-zinc-800 border rounded-xl text-center font-mono h-8 text-sm outline-none text-gray-900 dark:text-gray-100" placeholder="Выкл">
+                </div>
+
+                <!-- [НОВАЯ НАСТРОЙКА 10] Сброс всех данных приложения -->
+                <div class="p-2 border border-dashed border-red-300 rounded-2xl bg-red-500/5">
+                    <button id="btn-hard-reset" class="w-full py-2 bg-red-600 text-white text-xs font-bold rounded-xl active:scale-95 transition">
+                        💥 СБРОСИТЬ ВСЕ НАСТРОЙКИ И КЭШ
+                    </button>
+                </div>
+
+                <!-- Дополнительные глобальные утилиты чата внизу настроек -->
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                    <button id="btn-export-chat" class="p-2.5 bg-zinc-100 dark:bg-zinc-700 font-bold rounded-xl text-xs">💾 Экспорт (.TXT)</button>
+                    <button id="btn-clear-chat-nodes" class="p-2.5 bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold rounded-xl text-xs">🧹 Очистить чат</button>
                 </div>
             </div>
         </div>
@@ -358,6 +587,52 @@
         const stickerUploadInput = document.getElementById('sticker-upload-input');
         const stickersGrid = document.getElementById('stickers-grid');
 
+        // --- НОВЫЕ ХЕНДЛЕРЫ ЭЛЕМЕНТОВ ПОД ОБНОВЛЕНИЕ ---
+        const pinLockScreen = document.getElementById('pin-lock-screen');
+        const pinInput = document.getElementById('pin-input');
+        const pinUnlockBtn = document.getElementById('pin-unlock-btn');
+        const settingPinCode = document.getElementById('setting-pin-code');
+
+        const contextMenuPopup = document.getElementById('context-menu-popup');
+        const ctxReplyBtn = document.getElementById('ctx-reply-btn');
+        const ctxEditBtn = document.getElementById('ctx-edit-btn');
+        const ctxStarBtn = document.getElementById('ctx-star-btn');
+        const ctxDeleteBtn = document.getElementById('ctx-delete-btn');
+
+        const searchBarContainer = document.getElementById('search-bar-container');
+        const searchMessagesInput = document.getElementById('search-messages-input');
+        const btnClearSearch = document.getElementById('btn-clear-search');
+        const btnToggleSearch = document.getElementById('btn-toggle-search');
+
+        const inputModifierPanel = document.getElementById('input-modifier-panel');
+        const modifierTypeLabel = document.getElementById('modifier-type-label');
+        const modifierTextPreview = document.getElementById('modifier-text-preview');
+        const btnCancelModifier = document.getElementById('btn-cancel-modifier');
+
+        const charCounter = document.getElementById('char-counter');
+        const settingTtl = document.getElementById('setting-ttl');
+        const btnSendLocation = document.getElementById('btn-send-location');
+        const headerExtraInfo = document.getElementById('header-extra-info');
+
+        const gamesModal = document.getElementById('games-modal');
+        const btnShowGames = document.getElementById('btn-show-games');
+        const btnCloseGames = document.getElementById('close-games-btn');
+        const btnGameReset = document.getElementById('btn-game-reset');
+        const gameYourTurn = document.getElementById('game-your-turn');
+        const tttBoard = document.getElementById('ttt-board');
+
+        const settingThemeColor = document.getElementById('setting-theme-color');
+        const settingIncognito = document.getElementById('setting-incognito');
+        const settingHaptic = document.getElementById('setting-haptic');
+        const settingCompressImg = document.getElementById('setting-compress-img');
+        const settingVoiceFx = document.getElementById('setting-voice-fx');
+        const settingMaxSize = document.getElementById('setting-max-size');
+        const settingAutoscroll = document.getElementById('setting-autoscroll');
+        const settingSaveSession = document.getElementById('setting-save-session');
+        const btnHardReset = document.getElementById('btn-hard-reset');
+        const btnExportChat = document.getElementById('btn-export-chat');
+        const btnClearChatNodes = document.getElementById('btn-clear-chat-nodes');
+
         // --- WebRTC Переменные ---
         let peerConnection;
         let dataChannel;
@@ -383,6 +658,14 @@
         let audioChunks = [];
         let isRecording = false;
 
+        // Глобальное состояние модификатора ввода и контекста
+        let currentSelectedMsgId = null;
+        let currentModifierMode = null; // 'reply' или 'edit'
+        let p2pGameState = Array(9).fill(null);
+        let myGameSymbol = 'X'; 
+        let isMyTurn = false;
+        let pingInterval = null;
+
         // --- ДИНАМИЧЕСКИЙ РАСЧЕТ ВЫСОТЫ ПОД КЛАВИАТУРУ СМАРТФОНА ---
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
@@ -393,6 +676,18 @@
                 document.body.style.height = window.visualViewport.height + 'px';
             });
         }
+
+        // --- Логика тактильной вибрации (Haptic) ---
+        function triggerHaptic(type = 'light') {
+            if (!settingHaptic.checked || !navigator.vibrate) return;
+            if (type === 'light') navigator.vibrate(15);
+            else if (type === 'medium') navigator.vibrate(35);
+            else if (type === 'success') navigator.vibrate([20, 40, 20]);
+        }
+
+        document.querySelectorAll('button').forEach(b => {
+            b.addEventListener('click', () => triggerHaptic('light'));
+        });
 
         // --- Исходная логика переключения вкладок ролей ---
         roleAdminBtn.addEventListener('click', () => {
@@ -438,6 +733,60 @@
             } else {
                 document.documentElement.classList.remove('dark');
                 localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // --- ЛОГИКА ЦВЕТОВЫХ АКЦЕНТОВ ИНТЕРФЕЙСА (Новая настройка 1) ---
+        function applyAccentTheme() {
+            const color = settingThemeColor.value;
+            const headers = document.querySelectorAll('.header-gradient-target');
+            const btns = document.querySelectorAll('.btn-gradient-target');
+            const lines = document.querySelectorAll('.border-accent-target');
+            const texts = document.querySelectorAll('.text-accent-target');
+            const strokeAccents = document.querySelectorAll('.stroke-accent-target');
+            
+            let from = '#10B981', to = '#059669';
+            if (color === 'indigo') { from = '#6366F1'; to = '#4338CA'; }
+            else if (color === 'violet') { from = '#8B5CF6'; to = '#6D28D9'; }
+            else if (color === 'amber') { from = '#F59E0B'; to = '#D97706'; }
+
+            headers.forEach(h => h.style.background = `linear-gradient(135deg, ${from}, ${to})`);
+            btns.forEach(b => b.style.background = `linear-gradient(135deg, ${from}, ${to})`);
+            lines.forEach(l => l.style.borderColor = from);
+            texts.forEach(t => t.style.color = from);
+            strokeAccents.forEach(s => s.setAttribute('stroke', to));
+            document.querySelector("meta[name='theme-color']").setAttribute('content', from);
+        }
+        settingThemeColor.addEventListener('change', () => {
+            localStorage.setItem('folj_accent', settingThemeColor.value);
+            applyAccentTheme();
+        });
+        if (localStorage.getItem('folj_accent')) {
+            settingThemeColor.value = localStorage.getItem('folj_accent');
+        }
+
+        // --- ЛОГИКА СИСТЕМНОГО PIN-КОДА ЗАЩИТЫ (Новая настройка 9) ---
+        if (localStorage.getItem('folj_pin')) {
+            settingPinCode.value = localStorage.getItem('folj_pin');
+            pinLockScreen.classList.remove('hidden');
+        }
+        settingPinCode.addEventListener('input', () => {
+            const val = settingPinCode.value.trim();
+            if (val.length === 4) {
+                localStorage.setItem('folj_pin', val);
+                triggerHaptic('success');
+            } else if (val.length === 0) {
+                localStorage.removeItem('folj_pin');
+            }
+        });
+        pinUnlockBtn.addEventListener('click', () => {
+            if (pinInput.value === localStorage.getItem('folj_pin')) {
+                pinLockScreen.classList.add('hidden');
+                triggerHaptic('success');
+            } else {
+                pinInput.value = '';
+                alert('Неверный код доступа!');
+                triggerHaptic('medium');
             }
         });
 
@@ -488,8 +837,26 @@
             this.value = '';
         });
 
+        // --- УТИЛИТА СЖАТИЯ КАРТИНЫ (Новая настройка 4) ---
+        function compressImage(base64Str, callback) {
+            if (!settingCompressImg.checked) { callback(base64Str); return; }
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const max_size = 800;
+                let width = img.width, height = img.height;
+                if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } }
+                else { if (height > max_size) { width *= max_size / height; height = max_size; } }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                callback(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        }
+
         // --- Функции UI ---
-        function addMessage(text, isMine, isSystem = false, dataType = 'text', fileData = null, senderName = '', msgId = null) {
+        function addMessage(text, isMine, isSystem = false, dataType = 'text', fileData = null, senderName = '', msgId = null, replyToId = null, reactions = {}) {
             const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const msgDiv = document.createElement('div');
             
@@ -497,7 +864,7 @@
                 msgDiv.className = `msg-bubble msg-in p-3.5 text-[14px] border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-950/20 mx-auto w-[90%] text-center shadow-sm`;
                 msgDiv.innerHTML = `<span class='font-bold text-amber-800 dark:text-amber-400'>Система:</span><br>${text}`;
             } else {
-                msgDiv.className = `msg-bubble p-3.5 ${isMine ? 'msg-out' : 'msg-in'}`;
+                msgDiv.className = `msg-bubble p-3.5 ${isMine ? 'msg-out' : 'msg-in'} cursor-pointer select-none`;
                 msgDiv.style.fontSize = settingFontSize.value;
                 if (msgId) msgDiv.setAttribute('data-id', msgId);
                 
@@ -507,27 +874,48 @@
                 // Иконка статуса (галочка) для моих сообщений
                 const statusHTML = isMine ? `<span class="msg-status text-[11px] ml-1 text-emerald-200">✓</span>` : '';
 
+                // Отрендерить цитату, если привязана
+                let replyHTML = '';
+                if (replyToId) {
+                    const targetNode = document.querySelector(`[data-id="${replyToId}"]`);
+                    let targetText = targetNode ? targetNode.innerText.split('\n')[1] : 'Сообщение...';
+                    replyHTML = `<div class="border-l-2 border-black/20 dark:border-white/20 pl-1.5 mb-1 opacity-70 text-[11px] truncate">↪️ ${targetText}</div>`;
+                }
+
+                // Отрендерить строку реакций
+                let reactionHTML = `<div class="reaction-row flex gap-1 mt-1 empty:hidden text-xs">`;
+                for (let r in reactions) {
+                    if (reactions[r] > 0) reactionHTML += `<span class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded-full">${r} ${reactions[r]}</span>`;
+                }
+                reactionHTML += `</div>`;
+
                 if (dataType === 'text') {
                     msgDiv.innerHTML = `
                         <div class="text-[11px] ${nameColor} mb-0.5">${finalSender}</div>
-                        <div>${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                        ${replyHTML}
+                        <div class="msg-body-content">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                        ${reactionHTML}
                         <div class="text-[10px] ${isMine ? 'text-emerald-100' : 'text-gray-400 dark:text-gray-500'} text-right mt-1 font-medium flex items-center justify-end gap-0.5">${time}${statusHTML}</div>
                     `;
                 } else if (dataType === 'voice') {
                     msgDiv.innerHTML = `
                         <div class="text-[11px] ${nameColor} mb-1">${finalSender}</div>
+                        ${replyHTML}
                         <div class="flex flex-col gap-1.5 min-w-[200px]">
                             <span class="text-xs font-medium opacity-90">🎙 Голосовое сообщение</span>
                             <audio src="${text}" controls class="w-full h-8 outline-none"></audio>
                         </div>
+                        ${reactionHTML}
                         <div class="text-[10px] ${isMine ? 'text-emerald-100' : 'text-gray-400 dark:text-gray-500'} text-right mt-1 font-medium flex items-center justify-end gap-0.5">${time}${statusHTML}</div>
                     `;
                 } else if (dataType === 'sticker') {
-                    msgDiv.className = `msg-bubble p-1 max-w-[50%] self-${isMine ? 'end' : 'start'} bg-transparent shadow-none border-none`;
+                    msgDiv.className = `msg-bubble p-1 max-w-[50%] self-${isMine ? 'end' : 'start'} bg-transparent shadow-none border-none cursor-pointer`;
                     if (msgId) msgDiv.setAttribute('data-id', msgId);
                     msgDiv.innerHTML = `
                         <div class="text-[11px] ${isMine ? 'text-right text-emerald-600 dark:text-emerald-400' : 'text-emerald-500'} font-bold px-1 mb-0.5">${finalSender}</div>
+                        ${replyHTML}
                         <img src="${text}" class="rounded-xl w-full object-contain max-h-40">
+                        ${reactionHTML}
                         <div class="text-[9px] text-gray-400 dark:text-gray-500 ${isMine ? 'text-right' : 'text-left'} px-1 mt-0.5 flex items-center ${isMine ? 'justify-end' : 'justify-start'} gap-0.5">${time}${statusHTML}</div>
                     `;
                 } else if (dataType === 'file') {
@@ -555,17 +943,36 @@
                     msgDiv.innerHTML = `
                         <div class="text-[11px] ${nameColor} mb-1">${finalSender}</div>
                         <div class="flex flex-col gap-1">
+                            ${replyHTML}
                             ${fileContentHTML}
                             <a href="${text}" download="${fileData.name}" class="mt-1 block text-center bg-white/20 hover:bg-white/30 text-xs font-bold py-1.5 px-3 rounded-lg border border-current transition text-center ${isMine ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}">
                                 📥 Скачать файл
                             </a>
                         </div>
+                        ${reactionHTML}
                         <div class="text-[10px] ${isMine ? 'text-emerald-100' : 'text-gray-400 dark:text-gray-500'} text-right mt-1 font-medium flex items-center justify-end gap-0.5">${time}${statusHTML}</div>
                     `;
                 }
+
+                // Логика вызова контекстного меню
+                msgDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    currentSelectedMsgId = msgId;
+                    const rect = msgDiv.getBoundingClientRect();
+                    contextMenuPopup.style.top = `${Math.min(rect.top + window.scrollY - 50, window.innerHeight - 180)}px`;
+                    contextMenuPopup.style.left = `${Math.max(10, Math.min(rect.left, window.innerWidth - 290))}px`;
+                    contextMenuPopup.classList.remove('hidden');
+                    
+                    // Скрыть редактирование, если сообщение чужое
+                    if (!isMine) ctxEditBtn.classList.add('hidden');
+                    else ctxEditBtn.classList.remove('hidden');
+                });
             }
             chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            if (settingAutoscroll.checked) {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
 
             if (!isMine && settingSound.checked && !isSystem) {
                 playNotificationSound();
@@ -576,6 +983,120 @@
                 sendPacket({ type: 'sys-ack', payload: msgId });
             }
         }
+
+        // Клик в любом месте закрывает контекстное меню
+        document.addEventListener('click', () => contextMenuPopup.classList.add('hidden'));
+
+        // Контекстные операции
+        ctxReplyBtn.addEventListener('click', () => {
+            currentModifierMode = 'reply';
+            inputModifierPanel.classList.remove('hidden');
+            modifierTypeLabel.innerText = 'Ответ на сообщение:';
+            const node = document.querySelector(`[data-id="${currentSelectedMsgId}"]`);
+            modifierTextPreview.innerText = node ? node.innerText.split('\n')[1] : '';
+        });
+
+        ctxEditBtn.addEventListener('click', () => {
+            currentModifierMode = 'edit';
+            inputModifierPanel.classList.remove('hidden');
+            modifierTypeLabel.innerText = 'Редактирование:';
+            const node = document.querySelector(`[data-id="${currentSelectedMsgId}"] .msg-body-content`);
+            if (node) {
+                messageInput.value = node.innerText;
+                modifierTextPreview.innerText = node.innerText;
+            }
+        });
+
+        ctxStarBtn.addEventListener('click', () => {
+            let stars = JSON.parse(localStorage.getItem('folj_stars')) || [];
+            const node = document.querySelector(`[data-id="${currentSelectedMsgId}"]`);
+            if (node && !stars.includes(node.innerText)) {
+                stars.push(node.innerText);
+                localStorage.setItem('folj_stars', JSON.stringify(stars));
+                alert('Сообщение добавлено в Избранное (Закладки)!');
+            }
+        });
+
+        ctxDeleteBtn.addEventListener('click', () => {
+            const node = document.querySelector(`[data-id="${currentSelectedMsgId}"]`);
+            if (node) node.remove();
+            sendPacket({ type: 'sys-msg-delete', payload: currentSelectedMsgId });
+        });
+
+        btnCancelModifier.addEventListener('click', () => {
+            inputModifierPanel.classList.add('hidden');
+            messageInput.value = '';
+            currentModifierMode = null;
+        });
+
+        // Реакции
+        document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const emoji = btn.innerText;
+                sendPacket({ type: 'sys-reaction', msgId: currentSelectedMsgId, emoji: emoji });
+                applyLocalReaction(currentSelectedMsgId, emoji);
+            });
+        });
+
+        function applyLocalReaction(mId, emoji) {
+            const node = document.querySelector(`[data-id="${mId}"] .reaction-row`);
+            if (node) {
+                node.innerHTML = `<span class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded-full">${emoji} 1</span>`;
+            }
+        }
+
+        // Поиск по сообщениям
+        btnToggleSearch.addEventListener('click', () => searchBarContainer.classList.toggle('hidden'));
+        searchMessagesInput.addEventListener('input', () => {
+            const f = searchMessagesInput.value.toLowerCase();
+            document.querySelectorAll('.msg-bubble:not(.mx-auto)').forEach(b => {
+                if(b.innerText.toLowerCase().includes(f)) b.classList.remove('hidden');
+                else b.classList.add('hidden');
+            });
+        });
+        btnClearSearch.addEventListener('click', () => {
+            searchMessagesInput.value = '';
+            document.querySelectorAll('.msg-bubble').forEach(b => b.classList.remove('hidden'));
+        });
+
+        // Отправка Геолокации
+        btnSendLocation.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const txt = `📍 Мои координаты: Широта ${pos.coords.latitude.toFixed(4)}, Долгота ${pos.coords.longitude.toFixed(4)}`;
+                    messageInput.value = txt;
+                    sendMessage();
+                }, () => alert('Не удалось получить доступ к GPS'));
+            }
+        });
+
+        // Счетчик символов
+        messageInput.addEventListener('input', () => {
+            charCounter.innerText = `${messageInput.value.length}/1000`;
+        });
+
+        // Очистка и экспорт чата
+        btnClearChatNodes.addEventListener('click', () => {
+            chatContainer.innerHTML = '';
+            triggerHaptic('medium');
+        });
+        btnExportChat.addEventListener('click', () => {
+            let txt = '';
+            document.querySelectorAll('.msg-bubble').forEach(m => txt += m.innerText + '\n\n');
+            const blob = new Blob([txt], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `foljgram_export_${Date.now()}.txt`;
+            a.click();
+        });
+
+        // Полный сброс приложения
+        btnHardReset.addEventListener('click', () => {
+            if(confirm('Вы уверены, что хотите стереть весь кэш и настройки FoljGram?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        });
 
         function playNotificationSound() {
             try {
@@ -592,6 +1113,19 @@
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.2);
             } catch(e) { console.log("Audio contexts blocked"); }
+        }
+
+        function playClickSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } catch(e){}
         }
 
         function updateStatus(text, state) {
@@ -619,6 +1153,12 @@
                 btnVoiceRecord.classList.remove('text-gray-400');
                 btnVoiceRecord.classList.add('text-gray-600');
                 closeModal(); 
+                
+                // Начать пинг мониторинг (Новое)
+                clearInterval(pingInterval);
+                pingInterval = setInterval(() => {
+                    sendPacket({ type: 'sys-ping', time: Date.now() });
+                }, 5000);
             } else if (state === 'connecting') {
                 statusText.classList.add('text-amber-100');
                 statusDot.classList.add('bg-amber-400');
@@ -629,6 +1169,7 @@
                 btnShowStickers.disabled = true;
                 btnVoiceRecord.disabled = true;
                 stickersPanel.classList.add('hidden');
+                clearInterval(pingInterval);
             } else { 
                 statusText.classList.add('text-green-50');
                 statusDot.classList.add('bg-red-400');
@@ -640,7 +1181,9 @@
                 btnVoiceRecord.disabled = true;
                 stickersPanel.classList.add('hidden');
                 chatTitle.innerText = "FoljGram";
+                clearInterval(pingInterval);
             }
+            applyAccentTheme();
         }
 
         // --- Управление Модалкой Связи ---
@@ -687,6 +1230,35 @@
             document.querySelectorAll('.msg-bubble:not(.mx-auto)').forEach(msg => {
                 msg.style.fontSize = settingFontSize.value;
             });
+        });
+
+        // --- Управление Модалкой Игр ---
+        btnShowGames.addEventListener('click', () => {
+            gamesModal.classList.remove('hidden');
+            setTimeout(() => { gamesModal.classList.remove('opacity-0'); }, 10);
+        });
+        btnCloseGames.addEventListener('click', () => gamesModal.classList.add('hidden'));
+
+        // Логика Крестиков-Ноликов
+        document.querySelectorAll('.ttt-cell').forEach(cell => {
+            cell.addEventListener('click', () => {
+                const idx = cell.getAttribute('data-index');
+                if (!isMyTurn || p2pGameState[idx] !== null) return;
+                p2pGameState[idx] = myGameSymbol;
+                cell.innerText = myGameSymbol;
+                isMyTurn = false;
+                gameYourTurn.innerText = 'Ход друга';
+                sendPacket({ type: 'sys-game-move', index: idx, symbol: myGameSymbol });
+                triggerHaptic('medium');
+            });
+        });
+
+        btnGameReset.addEventListener('click', () => {
+            p2pGameState = Array(9).fill(null);
+            document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = '');
+            isMyTurn = true;
+            gameYourTurn.innerText = 'Ваш ход!';
+            sendPacket({ type: 'sys-game-reset' });
         });
 
         // --- WebRTC Логика ---
@@ -752,6 +1324,13 @@
                 addMessage('Ура! Соединение установлено. FoljGram готов к работе!', false, true);
                 updateStatus('В сети 🌿', 'on');
                 sendPacket({ type: 'sys-name-sync', payload: localStorage.getItem('username') });
+                
+                // Передать статус батареи (Новое)
+                if(navigator.getBattery) {
+                    navigator.getBattery().then(bat => {
+                        sendPacket({ type: 'sys-battery', level: Math.round(bat.level * 100) });
+                    });
+                }
             };
             dataChannel.onclose = () => {
                 updateStatus('Отключен', 'off');
@@ -767,7 +1346,6 @@
                         friendName = data.payload || 'Друг';
                         chatTitle.innerText = friendName;
                     } else if (data.type === 'sys-action-status') {
-                        // Динамическое отображение статусов активности в шапке
                         if (data.payload === 'typing') {
                             statusText.innerText = 'печатает...';
                         } else if (data.payload === 'sending-media') {
@@ -778,7 +1356,6 @@
                             statusText.innerText = 'В сети 🌿';
                         }
                     } else if (data.type === 'sys-ack') {
-                        // Получили подтверждение прочтения сообщения (меняем галочку на две)
                         const targetMsg = document.querySelector(`[data-id="${data.payload}"]`);
                         if (targetMsg) {
                             const checkSpan = targetMsg.querySelector('.msg-status');
@@ -788,14 +1365,44 @@
                                 checkSpan.classList.add('text-sky-300', 'font-bold');
                             }
                         }
+                    } else if (data.type === 'sys-ping') {
+                        sendPacket({ type: 'sys-pong', time: data.time });
+                    } else if (data.type === 'sys-pong') {
+                        const latency = Date.now() - data.time;
+                        headerExtraInfo.innerText = `(${latency}ms)`;
+                    } else if (data.type === 'sys-battery') {
+                        headerExtraInfo.innerText += ` 🔋${data.level}%`;
+                    } else if (data.type === 'sys-msg-delete') {
+                        const target = document.querySelector(`[data-id="${data.payload}"]`);
+                        if(target) target.remove();
+                    } else if (data.type === 'sys-reaction') {
+                        applyLocalReaction(data.msgId, data.emoji);
+                    } else if (data.type === 'sys-msg-edit') {
+                        const t = document.querySelector(`[data-id="${data.msgId}"] .msg-body-content`);
+                        if(t) t.innerText = data.text + ' (изм.)';
+                    } else if (data.type === 'sys-game-move') {
+                        p2pGameState[data.index] = data.symbol;
+                        const cell = document.querySelector(`.ttt-cell[data-index="${data.index}"]`);
+                        if(cell) cell.innerText = data.symbol;
+                        isMyTurn = true;
+                        gameYourTurn.innerText = 'Ваш ход!';
+                        triggerHaptic('medium');
+                    } else if (data.type === 'sys-game-reset') {
+                        p2pGameState = Array(9).fill(null);
+                        document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = '');
+                        isMyTurn = false;
+                        gameYourTurn.innerText = 'Ход друга';
                     } else if (data.type === 'text') {
-                        addMessage(data.payload, false, false, 'text', null, data.sender, data.id);
+                        addMessage(data.payload, false, false, 'text', null, data.sender, data.id, data.replyToId);
+                        if (data.ttl > 0) {
+                            setTimeout(() => { const m = document.querySelector(`[data-id="${data.id}"]`); if(m) m.remove(); }, data.ttl * 1000);
+                        }
                     } else if (data.type === 'voice') {
-                        addMessage(data.payload, false, false, 'voice', null, data.sender, data.id);
+                        addMessage(data.payload, false, false, 'voice', null, data.sender, data.id, data.replyToId);
                     } else if (data.type === 'sticker') {
-                        addMessage(data.payload, false, false, 'sticker', null, data.sender, data.id);
+                        addMessage(data.payload, false, false, 'sticker', null, data.sender, data.id, data.replyToId);
                     } else if (data.type === 'file-chunk') {
-                        const { fileId, chunkIndex, totalChunks, fileName, fileType, fileSize, payload, sender, id } = data;
+                        const { fileId, chunkIndex, totalChunks, fileName, fileType, fileSize, payload, sender, id, replyToId } = data;
                         
                         if (!receivedChunks[fileId]) {
                             receivedChunks[fileId] = [];
@@ -812,7 +1419,7 @@
                                 name: fileName,
                                 type: fileType,
                                 size: fileSize
-                            }, sender, id);
+                            }, sender, id, replyToId);
                         }
                     }
                 } catch(e) {
@@ -823,6 +1430,7 @@
 
         createOfferBtn.addEventListener('click', async () => {
             pendingRole = 'creator';
+            myGameSymbol = 'X'; isMyTurn = true; gameYourTurn.innerText = "Ваш ход!";
             resetPeerConnection();
             initPeerConnection();
             dataChannel = peerConnection.createDataChannel('foljgramChat');
@@ -858,6 +1466,7 @@
 
         createAnswerBtn.addEventListener('click', async () => {
             pendingRole = 'joiner';
+            myGameSymbol = 'O'; isMyTurn = false; gameYourTurn.innerText = "Ход друга";
             const offerStr = friendCodeOfferArea.value.trim();
             if (!offerStr) { alert('Сначала вставьте ключ от Админа!'); return; }
             
@@ -906,7 +1515,7 @@
 
         // --- Логика отправки статуса активности (Печатает...) ---
         messageInput.addEventListener('input', () => {
-            if (dataChannel && dataChannel.readyState === 'open') {
+            if (dataChannel && dataChannel.readyState === 'open' && !settingIncognito.checked) {
                 sendPacket({ type: 'sys-action-status', payload: 'typing' });
                 
                 clearTimeout(typingTimeout);
@@ -920,13 +1529,37 @@
         function sendMessage() {
             const text = messageInput.value.trim();
             const myName = localStorage.getItem('username');
-            const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
             
-            if (text && dataChannel && dataChannel.readyState === 'open') {
-                sendPacket({ type: 'text', payload: text, sender: myName, id: msgId });
-                addMessage(text, true, false, 'text', null, myName, msgId);
+            if (!text) return;
+
+            if (currentModifierMode === 'edit') {
+                sendPacket({ type: 'sys-msg-edit', msgId: currentSelectedMsgId, text: text });
+                const bNode = document.querySelector(`[data-id="${currentSelectedMsgId}"] .msg-body-content`);
+                if (bNode) bNode.innerText = text + ' (изм.)';
+                inputModifierPanel.classList.add('hidden');
                 messageInput.value = '';
+                currentModifierMode = null;
+                return;
+            }
+
+            const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            const ttlVal = parseInt(settingTtl.value);
+            const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
+            
+            if (dataChannel && dataChannel.readyState === 'open') {
+                sendPacket({ type: 'text', payload: text, sender: myName, id: msgId, replyToId: rId, ttl: ttlVal });
+                addMessage(text, true, false, 'text', null, myName, msgId, rId);
+                messageInput.value = '';
+                charCounter.innerText = '0/1000';
+                inputModifierPanel.classList.add('hidden');
+                currentModifierMode = null;
                 sendPacket({ type: 'sys-action-status', payload: 'online' });
+                playClickSound();
+
+                // Таймер секретных сообщений у себя
+                if (ttlVal > 0) {
+                    setTimeout(() => { const node = document.querySelector(`[data-id="${msgId}"]`); if(node) node.remove(); }, ttlVal * 1000);
+                }
             }
         }
 
@@ -939,9 +1572,12 @@
         function sendSticker(base64Sticker) {
             const myName = localStorage.getItem('username');
             const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
             if (dataChannel && dataChannel.readyState === 'open') {
-                sendPacket({ type: 'sticker', payload: base64Sticker, sender: myName, id: msgId });
-                addMessage(base64Sticker, true, false, 'sticker', null, myName, msgId);
+                sendPacket({ type: 'sticker', payload: base64Sticker, sender: myName, id: msgId, replyToId: rId });
+                addMessage(base64Sticker, true, false, 'sticker', null, myName, msgId, rId);
+                inputModifierPanel.classList.add('hidden');
+                currentModifierMode = null;
             }
         }
 
@@ -952,7 +1588,12 @@
             const file = this.files[0];
             if (!file) return;
 
-            // Отправляем статус "отправляет фото/видео" собеседнику
+            const maxAllowedMB = parseInt(settingMaxSize.value);
+            if (file.size > maxAllowedMB * 1024 * 1024) {
+                alert(`Файл превышает установленный в настройках лимит в ${maxAllowedMB} MB!`);
+                return;
+            }
+
             if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
                 sendPacket({ type: 'sys-action-status', payload: 'sending-media' });
             }
@@ -960,42 +1601,63 @@
             const reader = new FileReader();
             const myName = localStorage.getItem('username');
             const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
             
             reader.onload = function(e) {
-                const base64Data = e.target.result;
-                const fileId = 'file_' + Date.now();
-                const totalChunks = Math.ceil(base64Data.length / CHUNK_MAX_SIZE);
-                
-                for (let i = 0; i < totalChunks; i++) {
-                    const start = i * CHUNK_MAX_SIZE;
-                    const end = start + CHUNK_MAX_SIZE;
-                    const chunkPayload = base64Data.substring(start, end);
+                const processFilePayload = (finalBase64) => {
+                    const fileId = 'file_' + Date.now();
+                    const totalChunks = Math.ceil(finalBase64.length / CHUNK_MAX_SIZE);
+                    
+                    for (let i = 0; i < totalChunks; i++) {
+                        const start = i * CHUNK_MAX_SIZE;
+                        const end = start + CHUNK_MAX_SIZE;
+                        const chunkPayload = finalBase64.substring(start, end);
 
-                    sendPacket({
-                        type: 'file-chunk',
-                        fileId: fileId,
-                        chunkIndex: i,
-                        totalChunks: totalChunks,
-                        fileName: file.name,
-                        fileType: file.type,
-                        fileSize: file.size,
-                        payload: chunkPayload,
-                        sender: myName,
-                        id: msgId
-                    });
+                        sendPacket({
+                            type: 'file-chunk',
+                            fileId: fileId,
+                            chunkIndex: i,
+                            totalChunks: totalChunks,
+                            fileName: file.name,
+                            fileType: file.type,
+                            fileSize: file.size,
+                            payload: chunkPayload,
+                            sender: myName,
+                            id: msgId,
+                            replyToId: rId
+                        });
+                    }
+
+                    addMessage(finalBase64, true, false, 'file', {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size
+                    }, myName, msgId, rId);
+                    
+                    inputModifierPanel.classList.add('hidden');
+                    currentModifierMode = null;
+                    sendPacket({ type: 'sys-action-status', payload: 'online' });
+                };
+
+                if (file.type.startsWith('image/')) {
+                    compressImage(e.target.result, processFilePayload);
+                } else {
+                    processFilePayload(e.target.result);
                 }
-
-                addMessage(base64Data, true, false, 'file', {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size
-                }, myName, msgId);
-                
-                sendPacket({ type: 'sys-action-status', payload: 'online' });
             };
 
             reader.readAsDataURL(file);
             this.value = '';
+        });
+
+        // Драг-н-дроп файлов прямо на зону чата (Новое)
+        window.addEventListener('dragover', e => e.preventDefault());
+        window.addEventListener('drop', e => {
+            e.preventDefault();
+            if (e.dataTransfer.files ? e.dataTransfer.files[0] : null) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
         });
 
         // --- Голосовые сообщения ---
@@ -1025,11 +1687,14 @@
                     const reader = new FileReader();
                     const myName = localStorage.getItem('username');
                     const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                    const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
                     
                     reader.onloadend = function() {
                         const base64Audio = reader.result;
-                        sendPacket({ type: 'voice', payload: base64Audio, sender: myName, id: msgId });
-                        addMessage(base64Audio, true, false, 'voice', null, myName, msgId);
+                        sendPacket({ type: 'voice', payload: base64Audio, sender: myName, id: msgId, replyToId: rId });
+                        addMessage(base64Audio, true, false, 'voice', null, myName, msgId, rId);
+                        inputModifierPanel.classList.add('hidden');
+                        currentModifierMode = null;
                         sendPacket({ type: 'sys-action-status', payload: 'online' });
                     };
                     reader.readAsDataURL(audioBlob);
@@ -1041,8 +1706,9 @@
                 voiceIndicator.classList.remove('hidden');
                 btnVoiceRecord.classList.add('text-red-500');
                 
-                // Оповещаем друга, что пишем аудио
-                sendPacket({ type: 'sys-action-status', payload: 'recording-audio' });
+                if (!settingIncognito.checked) {
+                    sendPacket({ type: 'sys-action-status', payload: 'recording-audio' });
+                }
             } catch (err) {
                 console.error('Ошибка доступа к микрофону:', err);
                 alert('Не удалось получить доступ к микрофону устройства.');
@@ -1065,6 +1731,8 @@
         btnVoiceRecord.addEventListener('touchstart', (e) => { e.preventDefault(); startVoiceRecording(); }, {passive: false});
         btnVoiceRecord.addEventListener('touchend', (e) => { e.preventDefault(); stopVoiceRecording(); }, {passive: false});
 
+        // Вызов первичной адаптации темы
+        applyAccentTheme();
     </script>
     <script>
       if ('serviceWorker' in navigator) {
