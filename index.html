@@ -114,10 +114,11 @@
 
     <header class="bg-gradient-to-r from-[#10B981] to-[#059669] text-white p-3 flex items-center justify-between shrink-0 shadow-lg z-10 w-full pt-[max(0.75rem, env(safe-area-inset-top))] header-gradient-target">
         <div class="flex items-center gap-3 overflow-hidden">
-            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-md border-2 border-white/40">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="stroke-accent-target">
+            <div id="chat-avatar-container" class="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-md border-2 border-white/40 overflow-hidden">
+                <svg id="chat-avatar-default" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="stroke-accent-target">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
+                <img id="chat-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
             </div>
             <div class="flex flex-col overflow-hidden">
                 <h1 id="chat-title" class="text-xl font-extrabold leading-tight tracking-tight truncate drop-shadow-sm">FoljGram</h1>
@@ -129,13 +130,9 @@
         </div>
         
         <div class="flex items-center gap-1.5 shrink-0">
-            <!-- Поиск по сообщениям (Новое) -->
+            <!-- Поиск по сообщениям -->
             <button id="btn-toggle-search" class="p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition active:scale-90 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
-            <!-- Игры P2P (Новое) -->
-            <button id="btn-show-games" class="p-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition active:scale-90 shadow-sm relative group">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>
             </button>
             <!-- Кнопка Настроек (Шестерёнка) -->
             <button id="btn-show-settings" class="p-2.5 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition active:scale-90 shadow-sm">
@@ -183,8 +180,9 @@
         <!-- Скрытые инпуты для работы с файлами и стикерами -->
         <input type="file" id="file-input" class="hidden">
         <input type="file" id="sticker-upload-input" class="hidden" accept="image/*">
+        <input type="file" id="avatar-upload-input" class="hidden" accept="image/*">
         
-        <!-- Панель управления специальными опциями отправки (Секретные сообщения, Гео и т.д.) -->
+        <!-- Панель управления специальными опциями отправки -->
         <div class="flex items-center justify-between px-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
             <div class="flex items-center gap-2">
                 <!-- Секретный таймер -->
@@ -261,32 +259,6 @@
         </div>
     </footer>
 
-    <!-- МОДАЛКА ИГР (КРЕСТИКИ-НОЛИКИ P2P) -->
-    <div id="games-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-[#1a1a1a] w-full rounded-t-[32px] p-6 pb-10 shadow-2xl modal-enter transform flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-extrabold tracking-tight">P2P Игры 🎮</h2>
-                <button id="close-games-btn" class="p-2.5 text-gray-500 bg-gray-100 dark:bg-zinc-800 rounded-full">✕</button>
-            </div>
-            <p class="text-xs text-gray-500">Сыграйте в Крестики-Нолики со своим собеседником в реальном времени!</p>
-            <div class="flex justify-center gap-4 text-sm font-bold my-2">
-                <div>Вы: <span id="game-your-turn" class="text-emerald-500">Ожидание</span></div>
-                <button id="btn-game-reset" class="bg-gray-200 dark:bg-zinc-700 px-3 py-1 rounded-lg text-xs">Сбросить поле</button>
-            </div>
-            <div class="grid grid-cols-3 gap-2 max-w-[240px] mx-auto w-full aspect-square bg-gray-100 dark:bg-zinc-800 p-2 rounded-xl" id="ttt-board">
-                <button data-index="0" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="1" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="2" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="3" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="4" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="5" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="6" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="7" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-                <button data-index="8" class="ttt-cell bg-white dark:bg-zinc-700 text-2xl font-extrabold h-16 rounded-lg flex items-center justify-center"></button>
-            </div>
-        </div>
-    </div>
-
     <!-- МОДАЛКА СВЯЗИ -->
     <div id="connection-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-[#1a1a1a] w-full rounded-t-[32px] p-6 pb-10 shadow-2xl modal-enter transform flex flex-col gap-4 max-h-[90vh] overflow-y-auto transition-colors duration-200" id="modal-content">
@@ -346,7 +318,7 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА НАСТРОЕК (ИНТЕРФЕЙС И ОПТИМИЗАЦИЯ - ДОПОЛНЕНО) -->
+    <!-- МОДАЛКА НАСТРОЕК -->
     <div id="settings-modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex flex-col justify-end hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-[#1a1a1a] w-full rounded-t-[32px] p-6 pb-10 shadow-2xl modal-enter transform flex flex-col gap-5 max-h-[85vh] overflow-y-auto transition-colors duration-200" id="settings-content">
             <div class="flex justify-between items-center">
@@ -357,6 +329,20 @@
             </div>
             
             <div class="flex flex-col gap-4 mt-2">
+                <!-- Выбор аватарки -->
+                <div class="flex flex-col gap-2 p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800 items-center">
+                    <div id="settings-avatar-preview-container" class="w-20 h-20 bg-gray-200 dark:bg-zinc-700 rounded-full flex items-center justify-center shadow-inner overflow-hidden border-2 border-emerald-500">
+                        <svg id="settings-avatar-default" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <img id="settings-avatar-img" class="w-full h-full object-cover hidden" alt="Preview">
+                    </div>
+                    <button id="btn-select-avatar" class="mt-1 px-4 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-xl active:scale-95 transition shadow-md">
+                        Выбрать аватарку
+                    </button>
+                </div>
+
                 <!-- Настройка Никнейма -->
                 <div class="flex flex-col gap-1.5 p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div class="flex flex-col">
@@ -402,7 +388,7 @@
                     </label>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 1] Цвет Акцента темы -->
+                <!-- Цвет Акцента темы -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Цвет интерфейса</p>
@@ -416,7 +402,7 @@
                     </select>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 2] Режим инкогнито активностей -->
+                <!-- Режим инкогнито активностей -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Абсолютный Инкогнито</p>
@@ -428,7 +414,7 @@
                     </label>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 3] Тактильная Вибрация -->
+                <!-- Тактильная Вибрация -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Виброотклик (Haptic)</p>
@@ -440,7 +426,7 @@
                     </label>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 4] Сжатие изображений перед Base64 -->
+                <!-- Сжатие изображений перед Base64 -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Оптимизация картинок</p>
@@ -452,7 +438,7 @@
                     </label>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 5] Фильтр эффектов голоса -->
+                <!-- Фильтр эффектов голоса -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Эффект голосовых</p>
@@ -465,7 +451,7 @@
                     </select>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 6] Лимит размера вложений -->
+                <!-- Лимит размера вложений -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Макс. размер файла</p>
@@ -478,7 +464,7 @@
                     </select>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 7] Автопрокрутка -->
+                <!-- Автопрокрутка -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Автопрокрутка вниз</p>
@@ -490,7 +476,7 @@
                     </label>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 8] Запоминание сессии связи -->
+                <!-- Запоминание сессии связи -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Сохранять сессии RTC</p>
@@ -502,7 +488,7 @@
                     </label>
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 9] Защита паролем на вход -->
+                <!-- Защита паролем на вход -->
                 <div class="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                     <div>
                         <p class="font-bold">Защитный PIN-код</p>
@@ -511,7 +497,7 @@
                     <input type="password" id="setting-pin-code" maxlength="4" class="w-20 bg-white dark:bg-zinc-800 border rounded-xl text-center font-mono h-8 text-sm outline-none text-gray-900 dark:text-gray-100" placeholder="Выкл">
                 </div>
 
-                <!-- [НОВАЯ НАСТРОЙКА 10] Сброс всех данных приложения -->
+                <!-- Сброс всех данных приложения -->
                 <div class="p-2 border border-dashed border-red-300 rounded-2xl bg-red-500/5">
                     <button id="btn-hard-reset" class="w-full py-2 bg-red-600 text-white text-xs font-bold rounded-xl active:scale-95 transition">
                         💥 СБРОСИТЬ ВСЕ НАСТРОЙКИ И КЭШ
@@ -587,7 +573,15 @@
         const stickerUploadInput = document.getElementById('sticker-upload-input');
         const stickersGrid = document.getElementById('stickers-grid');
 
-        // --- НОВЫЕ ХЕНДЛЕРЫ ЭЛЕМЕНТОВ ПОД ОБНОВЛЕНИЕ ---
+        // Элементы Аватарок
+        const avatarUploadInput = document.getElementById('avatar-upload-input');
+        const btnSelectAvatar = document.getElementById('btn-select-avatar');
+        const settingsAvatarDefault = document.getElementById('settings-avatar-default');
+        const settingsAvatarImg = document.getElementById('settings-avatar-img');
+        const chatAvatarDefault = document.getElementById('chat-avatar-default');
+        const chatAvatarImg = document.getElementById('chat-avatar-img');
+
+        // --- ДРУГИЕ ХЕНДЛЕРЫ ЭЛЕМЕНТОВ ---
         const pinLockScreen = document.getElementById('pin-lock-screen');
         const pinInput = document.getElementById('pin-input');
         const pinUnlockBtn = document.getElementById('pin-unlock-btn');
@@ -613,13 +607,6 @@
         const settingTtl = document.getElementById('setting-ttl');
         const btnSendLocation = document.getElementById('btn-send-location');
         const headerExtraInfo = document.getElementById('header-extra-info');
-
-        const gamesModal = document.getElementById('games-modal');
-        const btnShowGames = document.getElementById('btn-show-games');
-        const btnCloseGames = document.getElementById('close-games-btn');
-        const btnGameReset = document.getElementById('btn-game-reset');
-        const gameYourTurn = document.getElementById('game-your-turn');
-        const tttBoard = document.getElementById('ttt-board');
 
         const settingThemeColor = document.getElementById('setting-theme-color');
         const settingIncognito = document.getElementById('setting-incognito');
@@ -661,9 +648,6 @@
         // Глобальное состояние модификатора ввода и контекста
         let currentSelectedMsgId = null;
         let currentModifierMode = null; // 'reply' или 'edit'
-        let p2pGameState = Array(9).fill(null);
-        let myGameSymbol = 'X'; 
-        let isMyTurn = false;
         let pingInterval = null;
 
         // --- ДИНАМИЧЕСКИЙ РАСЧЕТ ВЫСОТЫ ПОД КЛАВИАТУРУ СМАРТФОНА ---
@@ -717,6 +701,57 @@
             sendPacket({ type: 'sys-name-sync', payload: name });
         });
 
+        // --- Логика Аватарок ---
+        let myAvatarBase64 = localStorage.getItem('user_avatar') || null;
+
+        function updateMyAvatarUI(base64) {
+            if (base64) {
+                settingsAvatarDefault.classList.add('hidden');
+                settingsAvatarImg.src = base64;
+                settingsAvatarImg.classList.remove('hidden');
+            } else {
+                settingsAvatarDefault.classList.remove('hidden');
+                settingsAvatarImg.classList.add('hidden');
+            }
+        }
+
+        function updateFriendAvatarUI(base64) {
+            if (base64) {
+                chatAvatarDefault.classList.add('hidden');
+                chatAvatarImg.src = base64;
+                chatAvatarImg.classList.remove('hidden');
+            } else {
+                chatAvatarDefault.classList.remove('hidden');
+                chatAvatarImg.classList.add('hidden');
+            }
+        }
+
+        if (myAvatarBase64) {
+            updateMyAvatarUI(myAvatarBase64);
+        }
+
+        btnSelectAvatar.addEventListener('click', () => avatarUploadInput.click());
+
+        avatarUploadInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressImage(e.target.result, function(compressedBase64) {
+                    myAvatarBase64 = compressedBase64;
+                    try {
+                        localStorage.setItem('user_avatar', myAvatarBase64);
+                    } catch (error) {
+                        console.log('Превышен лимит локального хранилища для аватара');
+                    }
+                    updateMyAvatarUI(myAvatarBase64);
+                    sendPacket({ type: 'sys-avatar-sync', payload: myAvatarBase64 });
+                });
+            };
+            reader.readAsDataURL(file);
+            this.value = '';
+        });
+
         // --- Логика Тёмной Темы ---
         if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -736,7 +771,7 @@
             }
         });
 
-        // --- ЛОГИКА ЦВЕТОВЫХ АКЦЕНТОВ ИНТЕРФЕЙСА (Новая настройка 1) ---
+        // --- ЛОГИКА ЦВЕТОВЫХ АКЦЕНТОВ ИНТЕРФЕЙСА ---
         function applyAccentTheme() {
             const color = settingThemeColor.value;
             const headers = document.querySelectorAll('.header-gradient-target');
@@ -755,7 +790,8 @@
             lines.forEach(l => l.style.borderColor = from);
             texts.forEach(t => t.style.color = from);
             strokeAccents.forEach(s => s.setAttribute('stroke', to));
-            document.querySelector("meta[name='theme-color']").setAttribute('content', from);
+            const metaTheme = document.querySelector("meta[name='theme-color']");
+            if (metaTheme) metaTheme.setAttribute('content', from);
         }
         settingThemeColor.addEventListener('change', () => {
             localStorage.setItem('folj_accent', settingThemeColor.value);
@@ -765,7 +801,7 @@
             settingThemeColor.value = localStorage.getItem('folj_accent');
         }
 
-        // --- ЛОГИКА СИСТЕМНОГО PIN-КОДА ЗАЩИТЫ (Новая настройка 9) ---
+        // --- ЛОГИКА СИСТЕМНОГО PIN-КОДА ЗАЩИТЫ ---
         if (localStorage.getItem('folj_pin')) {
             settingPinCode.value = localStorage.getItem('folj_pin');
             pinLockScreen.classList.remove('hidden');
@@ -837,7 +873,7 @@
             this.value = '';
         });
 
-        // --- УТИЛИТА СЖАТИЯ КАРТИНЫ (Новая настройка 4) ---
+        // --- УТИЛИТА СЖАТИЯ КАРТИНЫ ---
         function compressImage(base64Str, callback) {
             if (!settingCompressImg.checked) { callback(base64Str); return; }
             const img = new Image();
@@ -1154,7 +1190,7 @@
                 btnVoiceRecord.classList.add('text-gray-600');
                 closeModal(); 
                 
-                // Начать пинг мониторинг (Новое)
+                // Начать пинг мониторинг
                 clearInterval(pingInterval);
                 pingInterval = setInterval(() => {
                     sendPacket({ type: 'sys-ping', time: Date.now() });
@@ -1181,6 +1217,7 @@
                 btnVoiceRecord.disabled = true;
                 stickersPanel.classList.add('hidden');
                 chatTitle.innerText = "FoljGram";
+                updateFriendAvatarUI(null);
                 clearInterval(pingInterval);
             }
             applyAccentTheme();
@@ -1230,35 +1267,6 @@
             document.querySelectorAll('.msg-bubble:not(.mx-auto)').forEach(msg => {
                 msg.style.fontSize = settingFontSize.value;
             });
-        });
-
-        // --- Управление Модалкой Игр ---
-        btnShowGames.addEventListener('click', () => {
-            gamesModal.classList.remove('hidden');
-            setTimeout(() => { gamesModal.classList.remove('opacity-0'); }, 10);
-        });
-        btnCloseGames.addEventListener('click', () => gamesModal.classList.add('hidden'));
-
-        // Логика Крестиков-Ноликов
-        document.querySelectorAll('.ttt-cell').forEach(cell => {
-            cell.addEventListener('click', () => {
-                const idx = cell.getAttribute('data-index');
-                if (!isMyTurn || p2pGameState[idx] !== null) return;
-                p2pGameState[idx] = myGameSymbol;
-                cell.innerText = myGameSymbol;
-                isMyTurn = false;
-                gameYourTurn.innerText = 'Ход друга';
-                sendPacket({ type: 'sys-game-move', index: idx, symbol: myGameSymbol });
-                triggerHaptic('medium');
-            });
-        });
-
-        btnGameReset.addEventListener('click', () => {
-            p2pGameState = Array(9).fill(null);
-            document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = '');
-            isMyTurn = true;
-            gameYourTurn.innerText = 'Ваш ход!';
-            sendPacket({ type: 'sys-game-reset' });
         });
 
         // --- WebRTC Логика ---
@@ -1324,8 +1332,11 @@
                 addMessage('Ура! Соединение установлено. FoljGram готов к работе!', false, true);
                 updateStatus('В сети 🌿', 'on');
                 sendPacket({ type: 'sys-name-sync', payload: localStorage.getItem('username') });
+                if (myAvatarBase64) {
+                    sendPacket({ type: 'sys-avatar-sync', payload: myAvatarBase64 });
+                }
                 
-                // Передать статус батареи (Новое)
+                // Передать статус батареи
                 if(navigator.getBattery) {
                     navigator.getBattery().then(bat => {
                         sendPacket({ type: 'sys-battery', level: Math.round(bat.level * 100) });
@@ -1345,6 +1356,8 @@
                     if (data.type === 'sys-name-sync') {
                         friendName = data.payload || 'Друг';
                         chatTitle.innerText = friendName;
+                    } else if (data.type === 'sys-avatar-sync') {
+                        updateFriendAvatarUI(data.payload);
                     } else if (data.type === 'sys-action-status') {
                         if (data.payload === 'typing') {
                             statusText.innerText = 'печатает...';
@@ -1371,375 +1384,345 @@
                         const latency = Date.now() - data.time;
                         headerExtraInfo.innerText = `(${latency}ms)`;
                     } else if (data.type === 'sys-battery') {
-                        headerExtraInfo.innerText += ` 🔋${data.level}%`;
+                        console.log(`Заряд смартфона друга: ${data.level}%`);
                     } else if (data.type === 'sys-msg-delete') {
-                        const target = document.querySelector(`[data-id="${data.payload}"]`);
-                        if(target) target.remove();
+                        const targetMsg = document.querySelector(`[data-id="${data.payload}"]`);
+                        if (targetMsg) targetMsg.remove();
                     } else if (data.type === 'sys-reaction') {
                         applyLocalReaction(data.msgId, data.emoji);
-                    } else if (data.type === 'sys-msg-edit') {
-                        const t = document.querySelector(`[data-id="${data.msgId}"] .msg-body-content`);
-                        if(t) t.innerText = data.text + ' (изм.)';
-                    } else if (data.type === 'sys-game-move') {
-                        p2pGameState[data.index] = data.symbol;
-                        const cell = document.querySelector(`.ttt-cell[data-index="${data.index}"]`);
-                        if(cell) cell.innerText = data.symbol;
-                        isMyTurn = true;
-                        gameYourTurn.innerText = 'Ваш ход!';
-                        triggerHaptic('medium');
-                    } else if (data.type === 'sys-game-reset') {
-                        p2pGameState = Array(9).fill(null);
-                        document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = '');
-                        isMyTurn = false;
-                        gameYourTurn.innerText = 'Ход друга';
-                    } else if (data.type === 'text') {
-                        addMessage(data.payload, false, false, 'text', null, data.sender, data.id, data.replyToId);
-                        if (data.ttl > 0) {
-                            setTimeout(() => { const m = document.querySelector(`[data-id="${data.id}"]`); if(m) m.remove(); }, data.ttl * 1000);
+                    } else if (data.type === 'msg-edit') {
+                        const targetMsgNode = document.querySelector(`[data-id="${data.msgId}"] .msg-body-content`);
+                        if (targetMsgNode) targetMsgNode.innerText = data.payload;
+                    } else if (data.type === 'chat-msg') {
+                        // Секретное автоудаление (TTL)
+                        const currentTtl = parseInt(data.ttl || 0);
+                        const generatedId = data.msgId || 'msg_' + Date.now();
+                        
+                        addMessage(data.payload, false, false, data.dataType || 'text', data.fileMeta || null, friendName, generatedId, data.replyToId || null);
+                        
+                        if (currentTtl > 0) {
+                            setTimeout(() => {
+                                const el = document.querySelector(`[data-id="${generatedId}"]`);
+                                if (el) {
+                                    el.innerHTML = `<span class="italic text-gray-400 text-xs">⏳ Секретное сообщение удалено по таймеру</span>`;
+                                    setTimeout(() => el.remove(), 2500);
+                                }
+                            }, currentTtl * 1000);
                         }
-                    } else if (data.type === 'voice') {
-                        addMessage(data.payload, false, false, 'voice', null, data.sender, data.id, data.replyToId);
-                    } else if (data.type === 'sticker') {
-                        addMessage(data.payload, false, false, 'sticker', null, data.sender, data.id, data.replyToId);
                     } else if (data.type === 'file-chunk') {
-                        const { fileId, chunkIndex, totalChunks, fileName, fileType, fileSize, payload, sender, id, replyToId } = data;
-                        
-                        if (!receivedChunks[fileId]) {
-                            receivedChunks[fileId] = [];
-                        }
-                        
-                        receivedChunks[fileId][chunkIndex] = payload;
-                        const currentLoaded = receivedChunks[fileId].filter(Boolean).length;
-                        
-                        if (currentLoaded === totalChunks) {
-                            const fullBase64 = receivedChunks[fileId].join('');
-                            delete receivedChunks[fileId];
-                            
-                            addMessage(fullBase64, false, false, 'file', {
-                                name: fileName,
-                                type: fileType,
-                                size: fileSize
-                            }, sender, id, replyToId);
-                        }
+                        handleFileChunk(data);
                     }
-                } catch(e) {
-                    addMessage(event.data, false);
+                } catch (e) {
+                    console.log('Ошибка десериализации пакета:', e);
                 }
             };
         }
 
+        function sendPacket(obj) {
+            if (dataChannel && dataChannel.readyState === 'open') {
+                dataChannel.send(JSON.stringify(obj));
+            }
+        }
+
+        // Логика отправки статуса активности
+        function sendActivityStatus(status) {
+            if (settingIncognito.checked) return;
+            sendPacket({ type: 'sys-action-status', payload: status });
+        }
+
+        messageInput.addEventListener('input', () => {
+            sendActivityStatus('typing');
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => sendActivityStatus('online'), 1500);
+        });
+
+        // Формирование Offer (Админ)
         createOfferBtn.addEventListener('click', async () => {
-            pendingRole = 'creator';
-            myGameSymbol = 'X'; isMyTurn = true; gameYourTurn.innerText = "Ваш ход!";
             resetPeerConnection();
+            pendingRole = 'creator';
+            updateStatus('Генерация ключа...', 'connecting');
             initPeerConnection();
-            dataChannel = peerConnection.createDataChannel('foljgramChat');
+
+            dataChannel = peerConnection.createDataChannel('folj-text-channel');
             setupDataChannel();
-            
-            updateStatus('Генерация...', 'connecting');
-            myCodeOfferArea.value = 'Собираю маршруты через разные сети... Ждите...';
-            
+
             try {
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
-            } catch (e) {
-                console.error(e);
-                updateStatus('Ошибка', 'off');
+            } catch (err) {
+                alert('Не удалось запустить WebRTC');
+                updateStatus('Отключен', 'off');
             }
+        });
+
+        copyOfferBtn.addEventListener('click', () => {
+            myCodeOfferArea.select();
+            document.execCommand('copy');
+            triggerHaptic('success');
+            alert('Ваш ключ скопирован! Отправьте его другу через любой мессенджер.');
         });
 
         connectOfferBtn.addEventListener('click', async () => {
-            const answerStr = friendCodeAnswerArea.value.trim();
-            if (!answerStr) { alert('Вставьте ответ Гостя!'); return; }
-            if (peerConnection && peerConnection.connectionState === 'connected') { alert('Вы уже в сети!'); return; }
-
+            const rawFriendAnswer = friendCodeAnswerArea.value.trim();
+            if (!rawFriendAnswer) return alert('Пожалуйста, вставьте ответный ключ друга!');
             try {
-                const desc = JSON.parse(atob(answerStr));
-                if (desc.type !== 'answer') { throw new Error('Неверный тип кода.'); }
-                updateStatus('Подключение...', 'connecting');
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(desc));
-            } catch (e) {
-                alert('Неверный код Ответа!');
-                console.error(e);
+                const parsedAnswer = JSON.parse(atob(rawFriendAnswer));
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(parsedAnswer));
+                updateStatus('Соединение...', 'connecting');
+            } catch (err) {
+                alert('Ошибка импорта ключа! Проверьте правильность копирования.');
             }
         });
 
+        // Формирование Answer (Гость)
         createAnswerBtn.addEventListener('click', async () => {
-            pendingRole = 'joiner';
-            myGameSymbol = 'O'; isMyTurn = false; gameYourTurn.innerText = "Ход друга";
-            const offerStr = friendCodeOfferArea.value.trim();
-            if (!offerStr) { alert('Сначала вставьте ключ от Админа!'); return; }
+            const rawFriendOffer = friendCodeOfferArea.value.trim();
+            if (!rawFriendOffer) return alert('Пожалуйста, вставьте сначала ключ админа!');
             
             resetPeerConnection();
+            pendingRole = 'joiner';
+            updateStatus('Генерация ответа...', 'connecting');
             initPeerConnection();
-            updateStatus('Прием...', 'connecting');
-            myCodeAnswerArea.value = 'Генерация ответа... Ждите...';
 
             try {
-                const desc = JSON.parse(atob(offerStr));
-                if (desc.type !== 'offer') { throw new Error('Неверный тип кода.'); }
+                const parsedOffer = JSON.parse(atob(rawFriendOffer));
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(parsedOffer));
                 
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(desc));
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
-            } catch (e) {
-                alert('Неверный код Админа!');
-                console.error(e);
-                resetPeerConnection();
+            } catch (err) {
+                alert('Ошибка создания ответа. Возможно, некорректный ключ.');
+                updateStatus('Отключен', 'off');
             }
         });
 
-        function handleCopy(textArea, btn) {
-            textArea.select();
+        copyAnswerBtn.addEventListener('click', () => {
+            myCodeAnswerArea.select();
             document.execCommand('copy');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '✓ Скопировано';
-            btn.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
-            btn.classList.remove('bg-emerald-50', 'text-emerald-700', 'bg-zinc-100', 'text-zinc-800');
-            setTimeout(() => { 
-                btn.innerHTML = originalHTML;
-                btn.className = btn.className.replace(/bg-green-100 text-green-800 border-green-200/g, '');
-                if(btn.id === 'copy-offer-btn') btn.classList.add('bg-emerald-50', 'text-emerald-700');
-                if(btn.id === 'copy-answer-btn') btn.classList.add('bg-zinc-100', 'text-zinc-800');
-            }, 2000);
-        }
-
-        copyOfferBtn.addEventListener('click', () => handleCopy(myCodeOfferArea, copyOfferBtn));
-        copyAnswerBtn.addEventListener('click', () => handleCopy(myCodeAnswerArea, copyAnswerBtn));
-
-        function sendPacket(packetObj) {
-            if (dataChannel && dataChannel.readyState === 'open') {
-                dataChannel.send(JSON.stringify(packetObj));
-            }
-        }
-
-        // --- Логика отправки статуса активности (Печатает...) ---
-        messageInput.addEventListener('input', () => {
-            if (dataChannel && dataChannel.readyState === 'open' && !settingIncognito.checked) {
-                sendPacket({ type: 'sys-action-status', payload: 'typing' });
-                
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    sendPacket({ type: 'sys-action-status', payload: 'online' });
-                }, 1500);
-            }
+            triggerHaptic('success');
+            alert('Ваш ответный ключ скопирован! Отправьте его создателю чата.');
         });
 
-        // --- Отправка текстовых сообщений ---
+        // --- Главная функция отправки текстовых сообщений ---
         function sendMessage() {
             const text = messageInput.value.trim();
-            const myName = localStorage.getItem('username');
-            
             if (!text) return;
 
+            const generatedId = 'msg_' + Date.now();
+            const currentTtl = parseInt(settingTTL = document.getElementById('setting-ttl').value);
+
             if (currentModifierMode === 'edit') {
-                sendPacket({ type: 'sys-msg-edit', msgId: currentSelectedMsgId, text: text });
-                const bNode = document.querySelector(`[data-id="${currentSelectedMsgId}"] .msg-body-content`);
-                if (bNode) bNode.innerText = text + ' (изм.)';
+                sendPacket({ type: 'msg-edit', msgId: currentSelectedMsgId, payload: text });
+                const editedNode = document.querySelector(`[data-id="${currentSelectedMsgId}"] .msg-body-content`);
+                if (editedNode) editedNode.innerText = text;
+                
                 inputModifierPanel.classList.add('hidden');
                 messageInput.value = '';
                 currentModifierMode = null;
                 return;
             }
 
-            const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            const ttlVal = parseInt(settingTtl.value);
-            const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
+            const packet = {
+                type: 'chat-msg',
+                dataType: 'text',
+                payload: text,
+                msgId: generatedId,
+                ttl: currentTtl,
+                replyToId: currentModifierMode === 'reply' ? currentSelectedMsgId : null
+            };
+
+            sendPacket(packet);
+            addMessage(text, true, false, 'text', null, 'Вы', generatedId, packet.replyToId);
             
-            if (dataChannel && dataChannel.readyState === 'open') {
-                sendPacket({ type: 'text', payload: text, sender: myName, id: msgId, replyToId: rId, ttl: ttlVal });
-                addMessage(text, true, false, 'text', null, myName, msgId, rId);
-                messageInput.value = '';
-                charCounter.innerText = '0/1000';
+            messageInput.value = '';
+            charCounter.innerText = "0/1000";
+            playClickSound();
+
+            if (currentModifierMode === 'reply') {
                 inputModifierPanel.classList.add('hidden');
                 currentModifierMode = null;
-                sendPacket({ type: 'sys-action-status', payload: 'online' });
-                playClickSound();
+            }
 
-                // Таймер секретных сообщений у себя
-                if (ttlVal > 0) {
-                    setTimeout(() => { const node = document.querySelector(`[data-id="${msgId}"]`); if(node) node.remove(); }, ttlVal * 1000);
-                }
+            if (currentTtl > 0) {
+                setTimeout(() => {
+                    const el = document.querySelector(`[data-id="${generatedId}"]`);
+                    if (el) {
+                        el.innerHTML = `<span class="italic text-emerald-200 text-xs">⏳ Секретное сообщение удалено по таймеру</span>`;
+                        setTimeout(() => el.remove(), 2500);
+                    }
+                }, currentTtl * 1000);
             }
         }
 
         sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keypress', (e) => {
+        messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
 
-        // --- Быстрая отправка стикера ---
-        function sendSticker(base64Sticker) {
-            const myName = localStorage.getItem('username');
-            const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
-            if (dataChannel && dataChannel.readyState === 'open') {
-                sendPacket({ type: 'sticker', payload: base64Sticker, sender: myName, id: msgId, replyToId: rId });
-                addMessage(base64Sticker, true, false, 'sticker', null, myName, msgId, rId);
-                inputModifierPanel.classList.add('hidden');
-                currentModifierMode = null;
-            }
+        // --- Функция отправки встроенных Base64 стикеров ---
+        function sendSticker(base64Data) {
+            const generatedId = 'msg_' + Date.now();
+            const packet = {
+                type: 'chat-msg',
+                dataType: 'sticker',
+                payload: base64Data,
+                msgId: generatedId,
+                ttl: 0,
+                replyToId: null
+            };
+            sendPacket(packet);
+            addMessage(base64Data, true, false, 'sticker', null, 'Вы', generatedId);
+            stickersPanel.classList.add('hidden');
         }
 
-        // --- Скоростная отправка файлов ---
+        // --- Передача крупных файлов чанками через WebRTC Data Channel ---
         btnAttachFile.addEventListener('click', () => fileInput.click());
-        
+
         fileInput.addEventListener('change', function() {
             const file = this.files[0];
             if (!file) return;
 
-            const maxAllowedMB = parseInt(settingMaxSize.value);
-            if (file.size > maxAllowedMB * 1024 * 1024) {
-                alert(`Файл превышает установленный в настройках лимит в ${maxAllowedMB} MB!`);
+            const maxSizeLimit = parseInt(settingMaxSize.value) * 1024 * 1024;
+            if (file.size > maxSizeLimit) {
+                alert(`Файл превышает установленный лимит в ${settingMaxSize.value} МБ! Измените лимит в Настройках.`);
                 return;
             }
 
-            if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
-                sendPacket({ type: 'sys-action-status', payload: 'sending-media' });
-            }
-
+            sendActivityStatus('sending-media');
+            const fileId = 'file_' + Date.now();
             const reader = new FileReader();
-            const myName = localStorage.getItem('username');
-            const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
-            
+
             reader.onload = function(e) {
-                const processFilePayload = (finalBase64) => {
-                    const fileId = 'file_' + Date.now();
-                    const totalChunks = Math.ceil(finalBase64.length / CHUNK_MAX_SIZE);
-                    
-                    for (let i = 0; i < totalChunks; i++) {
-                        const start = i * CHUNK_MAX_SIZE;
-                        const end = start + CHUNK_MAX_SIZE;
-                        const chunkPayload = finalBase64.substring(start, end);
-
-                        sendPacket({
-                            type: 'file-chunk',
-                            fileId: fileId,
-                            chunkIndex: i,
-                            totalChunks: totalChunks,
-                            fileName: file.name,
-                            fileType: file.type,
-                            fileSize: file.size,
-                            payload: chunkPayload,
-                            sender: myName,
-                            id: msgId,
-                            replyToId: rId
-                        });
-                    }
-
-                    addMessage(finalBase64, true, false, 'file', {
-                        name: file.name,
-                        type: file.type,
-                        size: file.size
-                    }, myName, msgId, rId);
-                    
-                    inputModifierPanel.classList.add('hidden');
-                    currentModifierMode = null;
-                    sendPacket({ type: 'sys-action-status', payload: 'online' });
-                };
-
+                const rawBuffer = e.target.result;
+                
                 if (file.type.startsWith('image/')) {
-                    compressImage(e.target.result, processFilePayload);
+                    compressImage(rawBuffer, function(processedData) {
+                        executeChunkedTransfer(fileId, file, processedData, true);
+                    });
                 } else {
-                    processFilePayload(e.target.result);
+                    executeChunkedTransfer(fileId, file, rawBuffer, false);
                 }
             };
 
-            reader.readAsDataURL(file);
-            this.value = '';
-        });
-
-        // Драг-н-дроп файлов прямо на зону чата (Новое)
-        window.addEventListener('dragover', e => e.preventDefault());
-        window.addEventListener('drop', e => {
-            e.preventDefault();
-            if (e.dataTransfer.files ? e.dataTransfer.files[0] : null) {
-                fileInput.files = e.dataTransfer.files;
-                fileInput.dispatchEvent(new Event('change'));
+            if (file.type.startsWith('image/')) {
+                reader.readAsDataURL(file);
+            } else {
+                reader.readAsDataURL(file); // Для P2P кастомного протокола Base64 чанки оптимальны
             }
         });
 
-        // --- Голосовые сообщения ---
-        async function startVoiceRecording() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('Ваш браузер или устройство не поддерживает запись аудио.');
-                return;
+        function executeChunkedTransfer(fileId, file, dataString, isCompressedImage) {
+            const totalLength = dataString.length;
+            const numChunks = Math.ceil(totalLength / CHUNK_MAX_SIZE);
+            
+            addMessage(`Началась отправка файла: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)...`, true, true);
+
+            for (let i = 0; i < numChunks; i++) {
+                const start = i * CHUNK_MAX_SIZE;
+                const end = Math.min(start + CHUNK_MAX_SIZE, totalLength);
+                const chunkPayload = dataString.substring(start, end);
+
+                sendPacket({
+                    type: 'file-chunk',
+                    fileId: fileId,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    chunkIndex: i,
+                    totalChunks: numChunks,
+                    payload: chunkPayload
+                });
+            }
+            
+            // Отображаем сразу у себя локально по завершении цикла отправки буфера
+            setTimeout(() => {
+                addMessage(dataString, true, false, 'file', { name: file.name, size: file.size, type: file.type }, 'Вы', 'local_' + Date.now());
+                sendActivityStatus('online');
+            }, 300);
+        }
+
+        function handleFileChunk(chunk) {
+            if (!receivedChunks[chunk.fileId]) {
+                receivedChunks[chunk.fileId] = [];
+                updateStatus('получение медиа...', 'connecting');
             }
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            receivedChunks[chunk.fileId][chunk.chunkIndex] = chunk.payload;
+
+            // Проверяем полную сборку всех чанков файла
+            let count = 0;
+            for (let i = 0; i < chunk.totalChunks; i++) {
+                if (receivedChunks[chunk.fileId][i]) count++;
+            }
+
+            if (count === chunk.totalChunks) {
+                const completeDataString = receivedChunks[chunk.fileId].join('');
+                delete receivedChunks[chunk.fileId]; // очищаем буфер памяти
                 
-                let options = { mimeType: 'audio/mp4' };
-                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                    options = { mimeType: 'audio/webm' };
-                }
-
-                mediaRecorder = new MediaRecorder(stream, options);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: options.mimeType });
-                    const reader = new FileReader();
-                    const myName = localStorage.getItem('username');
-                    const msgId = 'msg_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-                    const rId = currentModifierMode === 'reply' ? currentSelectedMsgId : null;
-                    
-                    reader.onloadend = function() {
-                        const base64Audio = reader.result;
-                        sendPacket({ type: 'voice', payload: base64Audio, sender: myName, id: msgId, replyToId: rId });
-                        addMessage(base64Audio, true, false, 'voice', null, myName, msgId, rId);
-                        inputModifierPanel.classList.add('hidden');
-                        currentModifierMode = null;
-                        sendPacket({ type: 'sys-action-status', payload: 'online' });
-                    };
-                    reader.readAsDataURL(audioBlob);
-                    stream.getTracks().forEach(track => track.stop());
-                };
-
-                mediaRecorder.start();
-                isRecording = true;
-                voiceIndicator.classList.remove('hidden');
-                btnVoiceRecord.classList.add('text-red-500');
-                
-                if (!settingIncognito.checked) {
-                    sendPacket({ type: 'sys-action-status', payload: 'recording-audio' });
-                }
-            } catch (err) {
-                console.error('Ошибка доступа к микрофону:', err);
-                alert('Не удалось получить доступ к микрофону устройства.');
+                updateStatus('В сети 🌿', 'on');
+                addMessage(completeDataString, false, false, 'file', { name: chunk.fileName, size: chunk.fileSize, type: chunk.fileType }, friendName, 'file_' + Date.now());
             }
         }
 
-        function stopVoiceRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
+        // --- Запись и сжатие голосовых сообщений ---
+        btnVoiceRecord.addEventListener('click', async () => {
+            if (!isRecording) {
+                // Старт аудиозаписи
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const r = new FileReader();
+                        r.onload = function(e) {
+                            const base64Audio = e.target.result;
+                            const generatedId = 'voice_' + Date.now();
+                            
+                            sendPacket({
+                                type: 'chat-msg',
+                                dataType: 'voice',
+                                payload: base64Audio,
+                                msgId: generatedId,
+                                ttl: 0
+                            });
+                            addMessage(base64Audio, true, false, 'voice', null, 'Вы', generatedId);
+                        };
+                        r.readAsDataURL(audioBlob);
+                        
+                        // Отключаем микрофон от шины смартфона
+                        stream.getTracks().forEach(track => track.stop());
+                        sendActivityStatus('online');
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    voiceIndicator.classList.remove('hidden');
+                    iconMic.setAttribute('stroke', '#EF4444');
+                    sendActivityStatus('recording-audio');
+                    triggerHaptic('medium');
+                } catch (err) {
+                    alert('Не удалось получить доступ к микрофону устройства.');
+                }
+            } else {
+                // Стоп аудиозаписи
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
                 isRecording = false;
                 voiceIndicator.classList.add('hidden');
-                btnVoiceRecord.classList.remove('text-red-500');
+                iconMic.setAttribute('stroke', 'currentColor');
+                triggerHaptic('success');
             }
-        }
+        });
 
-        btnVoiceRecord.addEventListener('mousedown', (e) => { e.preventDefault(); startVoiceRecording(); });
-        btnVoiceRecord.addEventListener('mouseup', stopVoiceRecording);
-        btnVoiceRecord.addEventListener('mouseleave', stopVoiceRecording);
-
-        btnVoiceRecord.addEventListener('touchstart', (e) => { e.preventDefault(); startVoiceRecording(); }, {passive: false});
-        btnVoiceRecord.addEventListener('touchend', (e) => { e.preventDefault(); stopVoiceRecording(); }, {passive: false});
-
-        // Вызов первичной адаптации темы
+        // Принудительная инициализация стилей
         applyAccentTheme();
-    </script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-          .then(() => console.log('PWA Service Worker зарегистрирован!'))
-          .catch((err) => console.log('Ошибка PWA:', err));
-      }
     </script>
 </body>
 </html>
