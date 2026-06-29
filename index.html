@@ -1269,6 +1269,19 @@
             });
         });
 
+        // --- Настройка Сохранения Сессий RTC ---
+        if (localStorage.getItem('folj_save_session') === 'true') {
+            settingSaveSession.checked = true;
+        }
+        settingSaveSession.addEventListener('change', () => {
+            localStorage.setItem('folj_save_session', settingSaveSession.checked);
+            if (!settingSaveSession.checked) {
+                localStorage.removeItem('folj_cached_role');
+                localStorage.removeItem('folj_cached_local_sdp');
+                localStorage.removeItem('folj_cached_remote_sdp');
+            }
+        });
+
         // --- WebRTC Логика ---
         function resetPeerConnection() {
             if (peerConnection) {
@@ -1315,11 +1328,17 @@
                             copyOfferBtn.classList.remove('hidden');
                             copyOfferBtn.classList.add('flex');
                             updateStatus('Ключ готов', 'off');
+                            if (settingSaveSession.checked) {
+                                localStorage.setItem('folj_cached_local_sdp', code);
+                            }
                         } else if (pendingRole === 'joiner') {
                             myCodeAnswerArea.value = code;
                             copyAnswerBtn.classList.remove('hidden');
                             copyAnswerBtn.classList.add('flex');
                             updateStatus('Ответ готов', 'off');
+                            if (settingSaveSession.checked) {
+                                localStorage.setItem('folj_cached_local_sdp', code);
+                            }
                         }
                     }
                 };
@@ -1440,6 +1459,9 @@
         createOfferBtn.addEventListener('click', async () => {
             resetPeerConnection();
             pendingRole = 'creator';
+            if (settingSaveSession.checked) {
+                localStorage.setItem('folj_cached_role', 'creator');
+            }
             updateStatus('Генерация ключа...', 'connecting');
             initPeerConnection();
 
@@ -1466,6 +1488,9 @@
             const rawFriendAnswer = friendCodeAnswerArea.value.trim();
             if (!rawFriendAnswer) return alert('Пожалуйста, вставьте ответный ключ друга!');
             try {
+                if (settingSaveSession.checked) {
+                    localStorage.setItem('folj_cached_remote_sdp', rawFriendAnswer);
+                }
                 const parsedAnswer = JSON.parse(atob(rawFriendAnswer));
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(parsedAnswer));
                 updateStatus('Соединение...', 'connecting');
@@ -1481,6 +1506,10 @@
             
             resetPeerConnection();
             pendingRole = 'joiner';
+            if (settingSaveSession.checked) {
+                localStorage.setItem('folj_cached_role', 'joiner');
+                localStorage.setItem('folj_cached_remote_sdp', rawFriendOffer);
+            }
             updateStatus('Генерация ответа...', 'connecting');
             initPeerConnection();
 
@@ -1503,13 +1532,53 @@
             alert('Ваш ответный ключ скопирован! Отправьте его создателю чата.');
         });
 
+        // --- Функция Автоматического Восстановления Сессии РСТ ---
+        async function tryRestoreRTCSession() {
+            if (localStorage.getItem('folj_save_session') !== 'true') return;
+            
+            const cachedRole = localStorage.getItem('folj_cached_role');
+            const cachedLocal = localStorage.getItem('folj_cached_local_sdp');
+            const cachedRemote = localStorage.getItem('folj_cached_remote_sdp');
+
+            if (!cachedRole || !cachedLocal || !cachedRemote) return;
+
+            console.log('Попытка восстановить прошлую сессию связи...');
+            updateStatus('Восстановление связи...', 'connecting');
+            pendingRole = cachedRole;
+            initPeerConnection();
+
+            try {
+                if (cachedRole === 'creator') {
+                    // Восстанавливаем стейт админа
+                    dataChannel = peerConnection.createDataChannel('folj-text-channel');
+                    setupDataChannel();
+                    
+                    const localDesc = JSON.parse(atob(cachedLocal));
+                    await peerConnection.setLocalDescription(localDesc);
+                    
+                    const remoteDesc = JSON.parse(atob(cachedRemote));
+                    await peerConnection.setRemoteDescription(remoteDesc);
+                } else if (cachedRole === 'joiner') {
+                    // Восстанавливаем стейт гостя
+                    const remoteDesc = JSON.parse(atob(cachedRemote));
+                    await peerConnection.setRemoteDescription(remoteDesc);
+                    
+                    const localDesc = JSON.parse(atob(cachedLocal));
+                    await peerConnection.setLocalDescription(localDesc);
+                }
+            } catch (err) {
+                console.log('Не удалось автоматически поднять прошлую RTC сессию:', err);
+                resetPeerConnection();
+            }
+        }
+
         // --- Главная функция отправки текстовых сообщений ---
         function sendMessage() {
             const text = messageInput.value.trim();
             if (!text) return;
 
             const generatedId = 'msg_' + Date.now();
-            const currentTtl = parseInt(settingTTL = document.getElementById('setting-ttl').value);
+            const currentTtl = parseInt(document.getElementById('setting-ttl').value);
 
             if (currentModifierMode === 'edit') {
                 sendPacket({ type: 'msg-edit', msgId: currentSelectedMsgId, payload: text });
@@ -1721,8 +1790,9 @@
             }
         });
 
-        // Принудительная инициализация стилей
+        // Принудительная инициализация стилей и проверка сессии
         applyAccentTheme();
+        tryRestoreRTCSession();
     </script>
 </body>
 </html>
